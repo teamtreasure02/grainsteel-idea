@@ -1,0 +1,62 @@
+#!/usr/bin/env bash
+# grainsteel-uninstall - cleanup script
+# removes aliases and environment variables
+
+set -euo pipefail
+
+# get script directory
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# source function boxes
+source "$SCRIPT_DIR/function-box-detect.sh"
+source "$SCRIPT_DIR/function-box-install.sh"
+
+printf '%s\n' ''
+printf '%s\n' '🌾 grainsteel uninstall - cleaning up...'
+printf '%s\n' ''
+
+# remove grain alias
+printf '%s\n' '1️⃣  removing grain alias...'
+if remove_grain_alias; then
+    printf '%s\n' '   ✅ alias removed!'
+else
+    printf '%s\n' '   ℹ️  no alias found'
+fi
+
+printf '%s\n' ''
+
+# remove environment variable
+printf '%s\n' '2️⃣  removing GRAIN_COMMAND variable...'
+shell_config="$(get_shell_config)"
+
+if [ -f "$shell_config" ]; then
+    sed -i.bak '/# grain command compatibility/d' "$shell_config"
+    sed -i.bak '/export GRAIN_COMMAND=/d' "$shell_config"
+    rm -f "$shell_config.bak"
+    printf '%s\n' '   ✅ environment variable removed!'
+else
+    printf '%s\n' '   ℹ️  config file not found'
+fi
+
+printf '%s\n' ''
+
+# note about grain binary
+printf '%s\n' '3️⃣  grain binary (installed via cargo)...'
+if detect_grain_cargo; then
+    printf '%s\n' '   ⚠️  grain binary still installed!'
+    printf '%s\n' ''
+    printf '%s\n' '   to remove grain binary, run:'
+    printf '%s\n' '   cargo uninstall grain'
+else
+    printf '%s\n' '   ✅ grain binary not found'
+fi
+
+printf '%s\n' ''
+printf '%s\n' '🎉 grainsteel cleanup complete!'
+printf '%s\n' ''
+printf '%s\n' '   restart your shell or run:'
+printf '%s\n' "   source $shell_config"
+printf '%s\n' ''
+printf '%s\n' 'now == next + 1 🌾'
+printf '%s\n' ''
+

@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+# grainsteel - wrapper script for grain package manager
+# delegates to actual grain binary installed via cargo
+
+set -euo pipefail
+
+# check if grain binary exists (installed via cargo)
+if ! command -v grain >/dev/null 2>&1; then
+    printf '%s\n' '⚠️  grain binary not found!'
+    printf '%s\n' ''
+    printf '%s\n' 'install grain via cargo:'
+    printf '%s\n' '  cargo install grain'
+    printf '%s\n' ''
+    printf '%s\n' 'or visit: https://github.com/teamtreasure02/grain'
+    exit 1
+fi
+
+# delegate to grain binary
+exec grain "$@"

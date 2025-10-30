@@ -1,0 +1,193 @@
+#!/usr/bin/env bash
+# grainsteel-setup - smart installation assistant
+# uses function-box-* for all the heavy lifting!
+
+set -euo pipefail
+
+# get script directory
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# source function boxes
+source "$SCRIPT_DIR/function-box-detect.sh"
+source "$SCRIPT_DIR/function-box-install.sh"
+
+# ┌────────────────────────────────────────────────────────────────────────┐
+# │ WELCOME!                                                                │
+# └────────────────────────────────────────────────────────────────────────┘
+
+printf '%s\n' ''
+printf '%s\n' '🌾 grainsteel setup - checking your environment...'
+printf '%s\n' ''
+
+# ┌────────────────────────────────────────────────────────────────────────┐
+# │ STEP 1: CHECK STEEL                                                     │
+# └────────────────────────────────────────────────────────────────────────┘
+
+printf '%s\n' '1️⃣  checking for steel...'
+
+if detect_steel; then
+    printf '%s\n' "   ✅ steel found: $(get_steel_version)"
+else
+    printf '%s\n' '   ⚠️  steel not found!'
+    printf '%s\n' ''
+    printf '%s\n' '   install steel from: https://github.com/mattwparas/steel'
+    printf '%s\n' '   or use grainzsh auto-installer!'
+    printf '%s\n' ''
+    printf '%s\n' '   continue anyway? (y/n)'
+    read -r response
+    if [ "$response" != "y" ]; then
+        exit 1
+    fi
+fi
+
+printf '%s\n' ''
+
+# ┌────────────────────────────────────────────────────────────────────────┐
+# │ STEP 2: CHECK CARGO + GRAIN BINARY                                      │
+# └────────────────────────────────────────────────────────────────────────┘
+
+printf '%s\n' '2️⃣  checking for grain binary (cargo)...'
+
+if detect_cargo; then
+    printf '%s\n' '   ✅ cargo found!'
+    
+    if detect_grain_cargo; then
+        printf '%s\n' '   ✅ grain installed via cargo!'
+    else
+        printf '%s\n' '   ⚠️  grain not installed via cargo'
+        printf '%s\n' ''
+        printf '%s\n' '   install grain now? (y/n)'
+        read -r response
+        if [ "$response" = "y" ]; then
+            install_grain_cargo
+        fi
+    fi
+else
+    printf '%s\n' '   ⚠️  cargo not found!'
+    printf '%s\n' '   install rust from: https://rustup.rs'
+fi
+
+printf '%s\n' ''
+
+# ┌────────────────────────────────────────────────────────────────────────┐
+# │ STEP 3: CHECK EXISTING 'GRAIN' COMMAND                                  │
+# └────────────────────────────────────────────────────────────────────────┘
+
+printf '%s\n' '3️⃣  checking for existing "grain" command...'
+
+if detect_grain_command; then
+    printf '%s\n' '   ⚠️  "grain" command already exists!'
+    printf '%s\n' "   location: $(get_grain_location)"
+    printf '%s\n' ''
+    printf '%s\n' '   options:'
+    printf '%s\n' '     1. use "grainsteel" as your command (no alias)'
+    printf '%s\n' '     2. create alias anyway (may conflict!)'
+    printf '%s\n' '     3. cancel setup'
+    printf '%s\n' ''
+    printf '%s\n' '   choose (1/2/3):'
+    read -r choice
+    
+    case "$choice" in
+        1)
+            printf '%s\n' '   ✅ will use "grainsteel" command'
+            SKIP_ALIAS=1
+            ;;
+        2)
+            printf '%s\n' '   ⚠️  creating alias anyway...'
+            install_grain_alias
+            ;;
+        3)
+            printf '%s\n' '   cancelled!'
+            exit 0
+            ;;
+        *)
+            printf '%s\n' '   invalid choice, using "grainsteel"'
+            SKIP_ALIAS=1
+            ;;
+    esac
+else
+    printf '%s\n' '   ✅ "grain" command available!'
+    printf '%s\n' '   creating alias: grain → grainsteel'
+    install_grain_alias
+    SKIP_ALIAS=0
+fi
+
+printf '%s\n' ''
+
+# ┌────────────────────────────────────────────────────────────────────────┐
+# │ STEP 4: CHECK GRAINZSH                                                  │
+# └────────────────────────────────────────────────────────────────────────┘
+
+printf '%s\n' '4️⃣  checking for grainzsh...'
+
+if detect_grainzsh; then
+    printf '%s\n' '   ✅ grainzsh found!'
+else
+    printf '%s\n' '   ⚠️  grainzsh not found'
+    printf '%s\n' ''
+    printf '%s\n' '   grainzsh provides:'
+    printf '%s\n' '     - auto steel installation'
+    printf '%s\n' '     - grain module path management'
+    printf '%s\n' '     - beautiful zsh config'
+    printf '%s\n' ''
+    printf '%s\n' '   install grainzsh? (y/n)'
+    read -r response
+    if [ "$response" = "y" ]; then
+        install_grainzsh
+    fi
+fi
+
+printf '%s\n' ''
+
+# ┌────────────────────────────────────────────────────────────────────────┐
+# │ STEP 5: CHECK PACKAGE MANAGERS FOR CONFLICTS                            │
+# └────────────────────────────────────────────────────────────────────────┘
+
+printf '%s\n' '5️⃣  checking package managers for "grain" conflicts...'
+
+pm_conflicts="$(detect_package_managers)"
+
+if [ -n "$pm_conflicts" ]; then
+    printf '%s\n' "   ⚠️  found 'grain' in: $pm_conflicts"
+    printf '%s\n' '   this may conflict with grainsteel!'
+else
+    printf '%s\n' '   ✅ no package manager conflicts!'
+fi
+
+printf '%s\n' ''
+
+# ┌────────────────────────────────────────────────────────────────────────┐
+# │ STEP 6: SET ENVIRONMENT VARIABLE                                        │
+# └────────────────────────────────────────────────────────────────────────┘
+
+printf '%s\n' '6️⃣  setting GRAIN_COMMAND environment variable...'
+
+install_grain_env
+
+printf '%s\n' ''
+
+# ┌────────────────────────────────────────────────────────────────────────┐
+# │ SETUP COMPLETE!                                                         │
+# └────────────────────────────────────────────────────────────────────────┘
+
+printf '%s\n' '🎉 grainsteel setup complete!'
+printf '%s\n' ''
+
+if [ "${SKIP_ALIAS:-0}" -eq 0 ]; then
+    printf '%s\n' '   restart your shell or run:'
+    printf '%s\n' "   source $(get_shell_config)"
+    printf '%s\n' ''
+    printf '%s\n' '   then use:'
+    printf '%s\n' '   grain install grainorder'
+    printf '%s\n' '   grain install grainbuild'
+else
+    printf '%s\n' '   use:'
+    printf '%s\n' '   grainsteel install grainorder'
+    printf '%s\n' '   grainsteel install grainbuild'
+fi
+
+printf '%s\n' ''
+printf '%s\n' 'full documentation: https://github.com/teamtreasure02/grain'
+printf '%s\n' ''
+printf '%s\n' 'now == next + 1 🌾'
+printf '%s\n' ''
