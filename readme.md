@@ -1,11 +1,13 @@
-# grainsteel - system packages for grain steel module manager
+# grainsteel - system packages for grain (IDEA - future)
 
 **team**: teamtreasure02 (taurus ♉ / II. the high priestess - building blocks)  
 **purpose**: distribution-friendly wrapper for grain package manager  
 **for**: brew, apt, nix, apk, pacman users  
 **installs**: grain package manager for Steel modules  
 **aliases**: `grain` (if safe) or `grainsteel` (always works)  
-**status**: decomplected, production-ready! ⚒️
+**status**: ⚠️ **IDEA** - defer until after Redox OS mastery! 🏔️  
+**decomplection**: ✅ already decomplected with function-box-* pattern!  
+**relationship**: wraps [grain-idea](https://github.com/teamtreasure02/grain-idea)
 
 ---
 
@@ -27,7 +29,69 @@
 
 ---
 
-## quick install
+## ⚠️ why is this an IDEA?
+
+**priority shift: Redox OS first!**
+
+### the realization:
+
+**package managers = convenience**  
+**Redox OS = sovereignty foundation**
+
+### the path:
+
+1. **weeks 1-4**: master Redox OS (microkernel, Rust, capabilities!)
+2. **weeks 5-8**: run grain modules on Redox natively
+3. **weeks 9+**: optimize distribution with grain/grainsteel
+
+### we can use grain modules TODAY without a package manager:
+
+```bash
+# clone and use directly:
+git clone https://github.com/teamtreasure02/grainorder
+cd grainorder
+steel grainorder.scm  # works!
+```
+
+**grain PM makes it EASIER, not POSSIBLE!**
+
+### when we return to this:
+
+- we'll have Redox OS mastery
+- we'll know what packaging ACTUALLY needs
+- we'll build it right the first time
+- we'll integrate with Redox's `pkg` manager
+
+**deferred, not abandoned!** 🏔️⚒️
+
+---
+
+## relationship with grain-idea
+
+**grainsteel** wraps **grain**:
+
+```
+grain-idea (core):
+  - Rust CLI package manager
+  - cargo install grain
+  - clones modules from GitHub
+  - manages ~/.grain/modules/
+
+grainsteel-idea (wrapper):
+  - bash scripts for system packages
+  - brew/apt/nix/apk/pacman install grainsteel
+  - runs: cargo install grain
+  - creates alias: grain → grainsteel
+  - smart conflict detection
+```
+
+**both are IDEAs until post-Redox!**
+
+see: https://github.com/teamtreasure02/grain-idea
+
+---
+
+## quick install (FUTURE - when we build this!)
 
 ### homebrew (macOS/linux)
 ```bash
